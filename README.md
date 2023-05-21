@@ -8,9 +8,9 @@ pip3 install --upgrade pip
 
 ```bash
 pip3 install --upgrade urllib3
-```bash
-
 ```
+
+```bash
 pip3 install requests
 ```
 
