@@ -7,10 +7,6 @@ pip install --upgrade pip
 ```
 
 ```bash
-pip install --upgrade urllib3
-```
-
-```bash
 pip install requests
 ```
 
