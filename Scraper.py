@@ -1,7 +1,34 @@
 #encoding: UTF-8
+#  **************************************************************************  #
+#                                                                              #
+#                                                          :::      ::::::::   #
+#    Scraper.py                                         :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: ahabachi <ahabachi@student.1337.ma>        +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2023/05/21 08:09:33 by ahabachi          #+#    #+#              #
+#    Updated: 2023/05/21 09:10:00 by ahabachi         ###   ########.fr        #
+#                                                                              #
+#  **************************************************************************  #
+#                                                                              #
+#   █████████            ██████████         ██████████         ██████████      #
+#   ██     ██                    ██                 ██         ██      ██      #
+#          ██                    ██                 ██         ██      ██      #
+#          ██                    ██                 ██                 ██      #
+#          ██            ██████████         ██████████                 ██      #
+#          ██                    ██                 ██                 ██      #
+#          ██                    ██                 ██                 ██      #
+#          ██                    ██                 ██                 ██      #
+#       ████████         ██████████         ██████████                 ██      #
+#                                                                              #
+#  **************************************************************************  #
 
 import os
+import sys
 import requests
+
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 class Scraper:
 	def __init__(self, product, url):
@@ -106,6 +133,7 @@ class Scraper:
 			except:
 				pass
 	def save(self, data):
+		print ("Downloading (" + data['Name'] + ') ...')
 		dirname = ('assets/' + self.product + '/' + data['category'] + '/' + data['ID'])
 		self.mkdir(dirname)
 		req = requests.get(data['image'])
@@ -113,7 +141,7 @@ class Scraper:
 		with open(filename, 'wb') as fp:
 			fp.write(req.content)
 		with open(dirname + '/index.json', 'w') as fp:
-			fp.write(self.dict2text(data))	
-
+			fp.write(self.dict2text(data))
+	
 	def run(self):
 		self.unpack(self.url)

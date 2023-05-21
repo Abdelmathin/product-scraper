@@ -3,11 +3,15 @@
 # Python 2.7:
 
 ```bash
-pip install --upgrade pip
+curl https://bootstrap.pypa.io/pip/2.7/get-pip.py -o get-pip.py
 ```
 
 ```bash
-pip install requests
+python -m pip install --upgrade pip
+```
+
+```bash
+python -m pip install requests
 ```
 
 ```bash
