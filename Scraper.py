@@ -6,8 +6,8 @@
 #                                                     +:+ +:+         +:+      #
 #    By: ahabachi <ahabachi@student.1337.ma>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2023/05/21 08:09:33 by ahabachi          #+#    #+#              #
-#    Updated: 2023/05/21 09:10:00 by ahabachi         ###   ########.fr        #
+#    Created: 2023/05/23 13:00:54 by ahabachi          #+#    #+#              #
+#    Updated: 2023/05/23 13:03:45 by ahabachi         ###   ########.fr        #
 #                                                                              #
 #  **************************************************************************  #
 #                                                                              #
@@ -45,54 +45,60 @@ class Scraper:
 		return (self.url + '/' + url)
 
 	def unpack(self, url, olddata = {}, entry = 0):
-		req = requests.get(url)
-		text = req.text
+		data = {}
+		try:
+			req = requests.get(url)
+			text = req.text
 
-		text = text[text.index('<div class="home_ul_img">'):]
+			text = text[text.index('<div class="home_ul_img">'):]
 
-		produects = text.split('\n                                        <')
-		produects = produects[1:]
-		for i in range(len(produects)):
-			produect = produects[i]
-			if (entry == 0):
-				olddata = {}
-			data = {}
-			if ('<div class="' in produect) and ('<a title="' in produect):
-				key = '<a title="'
-				produect = produect[produect.index(key) + len(key):]
-				key = '" href="'
+			produects = text.split('\n                                        <')
+			produects = produects[1:]
+			for i in range(len(produects)):
+				produect = produects[i]
+				if (entry == 0):
+					olddata = {}
+				data = {}
+				if ('<div class="' in produect) and ('<a title="' in produect):
+					key = '<a title="'
+					produect = produect[produect.index(key) + len(key):]
+					key = '" href="'
 
-				keyname = 'title-' + str(entry)
-				if (keyname == 'title-0'):
-					keyname = 'category'
-				data[keyname] = produect.split(key)[0]
+					keyname = 'title-' + str(entry)
+					if (keyname == 'title-0'):
+						keyname = 'category'
+					data[keyname] = produect.split(key)[0]
 
-				produect = produect[produect.index(key) + len(key):]
-				data['href-' + str(entry)] = self.fix_url(produect.split('">')[0])
-				key = '" data-original="'
-				produect = produect[produect.index(key) + len(key):]
-				key = '" class="'
-				
-				keyname = 'image-' + str(entry)
-				if (keyname == 'image-0'):
-					keyname = 'category-image'
-				data[keyname] = self.fix_url(produect.split(key)[0])
-				
-				produect = produect[produect.index(key) + len(key):]
-				for k, v in data.items():
-					olddata[k] = v
-				data = olddata
-				if (entry < 2):
-					self.unpack(data['href-' + str(entry)], olddata, entry + 1)
-				else:
-					req2 = requests.get(data['href-' + str(entry)])
-					text2 = req2.text
-					self.extract(text2, data)
+					produect = produect[produect.index(key) + len(key):]
+					data['href-' + str(entry)] = self.fix_url(produect.split('">')[0])
+					key = '" data-original="'
+					produect = produect[produect.index(key) + len(key):]
+					key = '" class="'
+					
+					keyname = 'image-' + str(entry)
+					if (keyname == 'image-0'):
+						keyname = 'category-image'
+					data[keyname] = self.fix_url(produect.split(key)[0])
+					
+					produect = produect[produect.index(key) + len(key):]
+					for k, v in data.items():
+						olddata[k] = v
+					data = olddata
+					if (entry < 2):
+						self.unpack(data['href-' + str(entry)], olddata, entry + 1)
+					else:
+						req2 = requests.get(data['href-' + str(entry)])
+						text2 = req2.text
+						self.extract(text2, data)
+		except:
+			pass
 		return data
 
 	def extract(self, text, data = {}):
-
-		comment = text.split('<!--  <ul>')[1].split('</ul>')[0].strip()
+		try:
+			comment = text.split('<!--  <ul>')[1].split('</ul>')[0].strip()
+		except:
+			return
 		for line in comment.split('</li>'):
 			line = line.strip()
 			if ('<a href="' in line):
@@ -115,13 +121,16 @@ class Scraper:
 
 	def dict2text(self, data):
 		text = '{\n'
-		inital_length = 15;
-		for key, value in data.items():
-			line = ('\t"' + key + '"')
-			line +=  ((" " * (inital_length - len(key))) + ' : ')
-			line += '"' + value + '",'
-			text += (line + '\n')
-		text += '}'
+		try:
+			inital_length = 15;
+			for key, value in data.items():
+				line = ('\t"' + key + '"')
+				line +=  ((" " * (inital_length - len(key))) + ' : ')
+				line += '"' + value + '",'
+				text += (line + '\n')
+			text += '}'
+		except:
+			return ("{}")
 		return (text)
 
 	def mkdir(self, dirname):
@@ -133,15 +142,18 @@ class Scraper:
 			except:
 				pass
 	def save(self, data):
-		print ("Downloading (" + data['Name'] + ') ...')
-		dirname = ('assets/' + self.product + '/' + data['category'] + '/' + data['ID'])
-		self.mkdir(dirname)
-		req = requests.get(data['image'])
-		filename = (dirname + '/' + data['image'].split('/')[-1])
-		with open(filename, 'wb') as fp:
-			fp.write(req.content)
-		with open(dirname + '/index.json', 'w') as fp:
-			fp.write(self.dict2text(data))
+		try:
+			print ("Downloading (" + data['Name'] + ') ...')
+			dirname = ('assets/' + self.product + '/' + data['category'] + '/' + data['ID'])
+			self.mkdir(dirname)
+			req = requests.get(data['image'])
+			filename = (dirname + '/' + data['image'].split('/')[-1])
+			with open(filename, 'wb') as fp:
+				fp.write(req.content)
+			with open(dirname + '/index.json', 'w') as fp:
+				fp.write(self.dict2text(data))
+		except:
+			pass
 	
 	def run(self):
 		self.unpack(self.url)
